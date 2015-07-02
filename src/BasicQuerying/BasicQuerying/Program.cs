@@ -25,8 +25,17 @@ namespace BasicQuerying
             {
                 Console.WriteLine(result.GetValue<string>("sku"));
             }
-            
-            
+
+            var boundQuery = session.Prepare("select * from products where product_id=?");
+
+            var boundStatement = boundQuery.Bind("p1");
+
+            var results2 = session.Execute(boundStatement);
+            foreach (var result in results2)
+            {
+                Console.WriteLine(result.GetValue<string>("sku"));
+            }
+
             session.Dispose();
             cluster.Dispose();
         }
