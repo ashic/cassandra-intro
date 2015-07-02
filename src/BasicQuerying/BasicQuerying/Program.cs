@@ -1,11 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Cassandra;
-using Cassandra.Data;
-using Cassandra.Data.Linq;
+using Cassandra.Mapping;
+using Cassandra.Mapping.Attributes;
 
 namespace BasicQuerying
 {
@@ -36,8 +33,31 @@ namespace BasicQuerying
                 Console.WriteLine(result.GetValue<string>("sku"));
             }
 
+            var mapping = new Mapper(session);
+
+            var products = mapping.Fetch<Product>("select * from products where product_id=? and sku=?", "p1", "psku1");
+            
+            foreach (var product in products)
+            {
+                Console.WriteLine("SKU: {0}, Price: {1}", product.Sku, product.Price);
+            }
+
             session.Dispose();
             cluster.Dispose();
         }
+    }
+
+    public class Product
+    {
+        [PartitionKey]
+        [Column("product_id")]
+        public string ProductId { get; set; }
+        [ClusteringKey(0)]
+        [Column("sku")]
+        public string Sku { get; set; }
+        [Column("price_in_pence")]
+        public int  Price { get; set; }
+        [Column("categories")]
+        public List<string> Categories { get; set; }
     }
 }
